@@ -5,9 +5,9 @@ import pandas as pd
 from datetime import datetime
 #import chart
 import plotly_chart as chart
-
 import config
 import os
+now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 load_dotenv()
 
 import os
@@ -53,6 +53,7 @@ print(df_subset.tail())
 
 # Graficación del dataset
 titulo = nombre_fichero.replace('.csv', '')
+titulo = f"{titulo}_{now_str}"
 #chart.graficar_precio(df, titulo=titulo, columna='Close')
 chart.graficar_precio(df_subset, titulo=titulo)
 
