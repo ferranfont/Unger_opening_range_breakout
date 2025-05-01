@@ -23,6 +23,19 @@ def graficar_precio(df, titulo):
         decreasing=dict(line=dict(color='black'), fillcolor='red')    # Black bearish candles, solid fill
     )])
 
+    # Adding a vertical line at 15:30 for each day in the chart
+    unique_dates = pd.Series(df.index.date).unique()  # Convert to Series and use unique
+    for day in unique_dates:
+        vertical_line_time = pd.Timestamp(f'{day} 15:30:00')  # Create the timestamp for 15:30 of each day
+        fig.add_shape(
+            type="line",
+            x0=vertical_line_time, x1=vertical_line_time,
+            y0=0, y1=1,
+            xref="x", yref="paper",
+            line=dict(color="blue", width=1, dash="dot"),  # Blue vertical line
+            opacity=0.5  # Adjust opacity for better visibility 
+        )
+
     fig.update_layout(
         title=f"Velas Japonesas - {titulo}",
         xaxis_title="Fecha",
