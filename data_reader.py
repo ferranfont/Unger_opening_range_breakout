@@ -6,9 +6,16 @@ import pytz
 os.makedirs('charts', exist_ok=True)
 
 
-# Ruta al archivo
+# Ruta al archivo y DATA RAW DE NINJATRADER
 directorio = '../DATA'
-nombre_fichero = 'export_es_2015.csv'
+#nombre_fichero = 'export_es_2015.csv'
+#nombre_fichero = 'export_NQ_2015.csv'
+#nombre_fichero = 'export_6E_2015.csv'
+#nombre_fichero = 'export_YM_2015.csv'
+nombre_fichero = 'export_GC_2015.csv'
+
+
+
 ruta_completa = os.path.join(directorio, nombre_fichero)
 
 # Definir los nombres manualmente si saltas la cabecera
