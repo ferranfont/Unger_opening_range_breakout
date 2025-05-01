@@ -32,7 +32,7 @@ def graficar_precio(df, titulo):
             x0=vertical_line_time, x1=vertical_line_time,
             y0=0, y1=1,
             xref="x", yref="paper",
-            line=dict(color="blue", width=1, dash="dot"),  # Blue vertical line
+            line=dict(color="blue", width=1),  # Blue vertical line
             opacity=0.5  # Adjust opacity for better visibility 
         )
 
