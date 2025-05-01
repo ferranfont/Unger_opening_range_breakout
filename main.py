@@ -2,7 +2,9 @@
 
 from dotenv import load_dotenv
 import pandas as pd
-import chart
+#import chart
+import plotly_chart as chart
+
 import config
 import os
 load_dotenv()
@@ -10,26 +12,20 @@ load_dotenv()
 import os
 import pandas as pd
 
-# Separar directorio y nombre del archivo
+# Dataset con toda la data desde el 2015 hasta el 2025  
 directorio = '../DATA'
 nombre_fichero = 'export_es_2015_formatted.csv'
 #nombre_fichero = 'export_NQ_2015_formatted.csv'
 #nombre_fichero = 'export_6E_2015_formatted.csv'
 #nombre_fichero = 'export_YM_2015_formatted.csv'
 #nombre_fichero = 'export_GC_2015_formatted.csv'
-
-
 ruta_completa = os.path.join(directorio, nombre_fichero)
-
-# Leer CSV
 df = pd.read_csv(ruta_completa)
-
-# Mostrar preview
 print(df.head())
 print(df.dtypes)
 
-# Título para gráfico
+# Graficación del dataset
 titulo = nombre_fichero.replace('.csv', '')
+#chart.graficar_precio(df, titulo=titulo, columna='Close')
+chart.graficar_precio(df, titulo=titulo)
 
-# Graficar
-chart.graficar_precio(df, titulo=titulo, columna='Close')
