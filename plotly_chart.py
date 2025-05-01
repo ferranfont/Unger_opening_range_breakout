@@ -13,27 +13,56 @@ def graficar_precio(df, titulo):
         df['Date'] = pd.to_datetime(df['Date'], utc=True)
         df.set_index('Date', inplace=True)
 
+    # Convert index to Madrid timezone
+    df.index = df.index.tz_convert('Europe/Madrid')
+
     fig = go.Figure(data=[go.Candlestick(
         x=df.index,
         open=df['Open'],
         high=df['High'],
         low=df['Low'],
         close=df['Close'],
-        increasing=dict(line=dict(color='black'), fillcolor='rgba(57, 255, 20, 0.5)'),  # Blue bullish candles, transparent fill
-        decreasing=dict(line=dict(color='black'), fillcolor='red')    # Black bearish candles, solid fill
+        increasing=dict(line=dict(color='black'), fillcolor='rgba(57, 255, 20, 0.5)'),
+        decreasing=dict(line=dict(color='black'), fillcolor='red')
     )])
 
-    # Adding a vertical line at 15:30 for each day in the chart
-    unique_dates = pd.Series(df.index.date).unique()  # Convert to Series and use unique
+    # Loop over each unique date
+    unique_dates = pd.Series(df.index.date).unique()
     for day in unique_dates:
-        vertical_line_time = pd.Timestamp(f'{day} 15:30:00')  # Create the timestamp for 15:30 of each day
+        # Build timezone-aware timestamps for the window
+        start_time = pd.Timestamp(f'{day} 15:00:00', tz='Europe/Madrid')
+        end_time = pd.Timestamp(f'{day} 15:30:00', tz='Europe/Madrid')
+
+        # Filter data in the 15:00–15:30 window
+        window_df = df[(df.index >= start_time) & (df.index <= end_time)]
+
+        if not window_df.empty:
+            y0_value = window_df['Low'].min()
+            y1_value = window_df['High'].max()
+
+            # Add rectangle for the time range on this day
+            fig.add_shape(
+                type="rect",
+                x0=start_time,
+                x1=end_time,
+                y0=y0_value,
+                y1=y1_value,
+                xref='x',
+                yref='y',
+                line=dict(color='lightblue', width=1),
+                fillcolor='rgba(173, 216, 230, 0.5)',
+                layer='below'
+            )
+
+        # Add vertical line at 15:30 on this day
+        vertical_line_time = pd.Timestamp(f'{day} 15:30:00', tz='Europe/Madrid')
         fig.add_shape(
             type="line",
             x0=vertical_line_time, x1=vertical_line_time,
             y0=0, y1=1,
             xref="x", yref="paper",
-            line=dict(color="blue", width=1),  # Blue vertical line
-            opacity=0.5  # Adjust opacity for better visibility 
+            line=dict(color="blue", width=1),
+            opacity=0.5
         )
 
     fig.update_layout(
@@ -43,7 +72,7 @@ def graficar_precio(df, titulo):
         xaxis=dict(
             showgrid=False,
             showspikes=True,
-            linecolor='darkgrey', 
+            linecolor='darkgrey',
             spikemode='across',
             spikesnap='cursor',
             spikecolor='grey',
@@ -54,8 +83,8 @@ def graficar_precio(df, titulo):
         yaxis=dict(
             showgrid=True,
             gridwidth=1,
-            linecolor='darkgrey', 
-            gridcolor='grey',  # Grey, discontinuous horizontal grid
+            linecolor='darkgrey',
+            gridcolor='grey',
             griddash='dot',
             showspikes=True,
             spikemode='across',
@@ -67,7 +96,7 @@ def graficar_precio(df, titulo):
         ),
         xaxis_rangeslider_visible=False,
         width=1800,
-        height=int(1800 * 0.45),  # Proportional height
+        height=int(1800 * 0.45),
         margin=dict(l=20, r=20, t=40, b=20),
         font=dict(size=12, color="black"),
         title_font=dict(size=16, color="black"),
@@ -82,7 +111,6 @@ def graficar_precio(df, titulo):
 
     fig.update_traces(showlegend=False)
 
-    # Enable scroll zoom with mouse wheel
     config = dict(scrollZoom=True)
 
     output_file = f'charts/{titulo}.html'
