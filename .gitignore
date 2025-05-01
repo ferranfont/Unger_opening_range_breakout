@@ -1,0 +1,22 @@
+# Ignorar carpeta de datos
+DATA/
+
+# Ignorar archivos .png y .csv en todo el proyecto
+*.png
+*.jpg
+*.jpeg
+*.JPG
+*.gif
+*.tiff
+*.tif
+*.bmp
+*.webp
+*.svg
+*.ico
+*.csv
+
+# Ignorar entorno virtual 
+venv/
+.env
+__pycache__/
+*.pyc

@@ -1,0 +1,15 @@
+# DEPENDENCIAS
+# os y sys son parte de la librería estándar de Python, no es necesario instalarlas
+
+
+# 📊 Datos y análisis
+pandas                  # Manejo de series temporales
+pytz                     # Manejo de zonas horarias
+
+# 📉 Visualización
+matplotlib              # Gráficos básicos
+plotly                  # Gráficos interactivos
+
+# 📦 Otros
+python-dotenv
+
