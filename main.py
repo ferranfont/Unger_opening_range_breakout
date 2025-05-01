@@ -7,11 +7,11 @@ from datetime import datetime
 import plotly_chart as chart
 import config
 import os
-now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-load_dotenv()
 
 import os
 import pandas as pd
+load_dotenv()
+now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
 # Dataset con toda la data desde el 2015 hasta el 2025  
 directorio = '../DATA'
@@ -22,14 +22,15 @@ nombre_fichero = 'export_es_2015_formatted.csv'
 #nombre_fichero = 'export_GC_2015_formatted.csv'
 ruta_completa = os.path.join(directorio, nombre_fichero)
 df = pd.read_csv(ruta_completa)
+
+print("\nDataset:")
 print(df.head())
+print(df.tail())
 print(df.dtypes)
 
 
 # CREACIÓN DE UN SUBDATASET CON UN RANGO 
 #   Convertir los límites de fecha
-import pandas as pd
-
 # Asegurarte de que 'Date' está presente
 if 'Date' in df.columns:
     df['Date'] = pd.to_datetime(df['Date'], utc=True)  # Asegura que tiene zona horaria UTC
@@ -39,11 +40,12 @@ if 'Date' in df.columns:
 df.index = df.index.tz_convert('Europe/Madrid')
 
 # Fechas límite
-START_DATE = pd.Timestamp("2025-04-29", tz='Europe/Madrid')
-END_DATE = pd.Timestamp("2025-04-29", tz='Europe/Madrid')
+START_DATE = pd.Timestamp("2025-04-23", tz='Europe/Madrid')
+END_DATE = pd.Timestamp("2025-04-23", tz='Europe/Madrid')
 
 # Filtrar el rango de fechas
-df_subset = df[(df.index >= START_DATE) & (df.index <= END_DATE)]
+df_subset = df[(df.index.date >= START_DATE.date()) & (df.index.date <= END_DATE.date())]
+
 
 print(f"✅ Subdataset creado con {len(df_subset)} registros entre {START_DATE} y {END_DATE}")
 print(df_subset.head())
