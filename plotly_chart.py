@@ -43,6 +43,7 @@ def graficar_precio(df, titulo):
         xaxis=dict(
             showgrid=False,
             showspikes=True,
+            linecolor='darkgrey', 
             spikemode='across',
             spikesnap='cursor',
             spikecolor='grey',
@@ -53,6 +54,7 @@ def graficar_precio(df, titulo):
         yaxis=dict(
             showgrid=True,
             gridwidth=1,
+            linecolor='darkgrey', 
             gridcolor='grey',  # Grey, discontinuous horizontal grid
             griddash='dot',
             showspikes=True,
@@ -65,15 +67,15 @@ def graficar_precio(df, titulo):
         ),
         xaxis_rangeslider_visible=False,
         width=1800,
-        height=int(1800 * 0.5),  # Proportional height
+        height=int(1800 * 0.45),  # Proportional height
         margin=dict(l=20, r=20, t=40, b=20),
-        font=dict(size=12, color="white"),
-        title_font=dict(size=16, color="white"),
-        xaxis_title_font=dict(size=14, color="white"),
-        yaxis_title_font=dict(size=14, color="white"),
-        legend=dict(font=dict(size=12, color="white")),
-        paper_bgcolor="lightgrey",
-        plot_bgcolor='white',
+        font=dict(size=12, color="black"),
+        title_font=dict(size=16, color="black"),
+        xaxis_title_font=dict(size=14, color="black"),
+        yaxis_title_font=dict(size=14, color="black"),
+        legend=dict(font=dict(size=12, color="black")),
+        paper_bgcolor="rgba(240, 240, 240, 0.6)",
+        plot_bgcolor='rgba(255, 255, 255, 0.001)',
         dragmode="pan",
         spikedistance=-1
     )
