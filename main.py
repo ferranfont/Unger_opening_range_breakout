@@ -16,10 +16,6 @@ now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 # Dataset con toda la data desde el 2015 hasta el 2025  
 directorio = '../DATA'
 nombre_fichero = 'export_es_2015_formatted.csv'
-#nombre_fichero = 'export_NQ_2015_formatted.csv'
-#nombre_fichero = 'export_6E_2015_formatted.csv'
-#nombre_fichero = 'export_YM_2015_formatted.csv'
-#nombre_fichero = 'export_GC_2015_formatted.csv'
 ruta_completa = os.path.join(directorio, nombre_fichero)
 df = pd.read_csv(ruta_completa)
 
