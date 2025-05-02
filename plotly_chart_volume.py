@@ -1,3 +1,6 @@
+# Grafica velas japonesas con volumen y rectángulos de tiempo INCLUYE VOLUMEN
+# y líneas verticales en el gráfico de velas japonesas
+
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -62,7 +65,7 @@ def graficar_precio(df, titulo):
                 row=1, col=1
             )
 
-        vertical_line_time = pd.Timestamp(f'{day} 15:30:00', tz='Europe/Madrid')
+        vertical_line_time = pd.Timestamp(END_TIME, tz='Europe/Madrid')
         fig.add_shape(
             type="line",
             x0=vertical_line_time, x1=vertical_line_time,

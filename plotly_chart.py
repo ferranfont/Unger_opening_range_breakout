@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 
-def graficar_precio(df, titulo):
+def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME):
     if df.empty or not all(col in df.columns for col in ['Open', 'High', 'Low', 'Close']):
         print("❌ DataFrame vacío o faltan columnas OHLC.")
         return
@@ -29,11 +29,14 @@ def graficar_precio(df, titulo):
     unique_dates = pd.Series(df.index.date).unique()
     for day in unique_dates:
         # Build timezone-aware timestamps for the window
-        start_time = pd.Timestamp(f'{day} 15:00:00', tz='Europe/Madrid')
-        end_time = pd.Timestamp(f'{day} 15:30:00', tz='Europe/Madrid')
+        #start_time = pd.Timestamp(f'{day} 15:00:00', tz='Europe/Madrid')
+        #end_time = pd.Timestamp(f'{day} 15:30:00', tz='Europe/Madrid')
+
+        
+
 
         # Filter data in the 15:00–15:30 window
-        window_df = df[(df.index >= start_time) & (df.index <= end_time)]
+        window_df = df[(df.index >= START_TIME) & (df.index <= END_TIME)]
 
         if not window_df.empty:
             y0_value = window_df['Low'].min()
@@ -42,8 +45,8 @@ def graficar_precio(df, titulo):
             # Add rectangle for the time range on this day
             fig.add_shape(
                 type="rect",
-                x0=start_time,
-                x1=end_time,
+                x0=START_TIME,
+                x1=END_TIME,
                 y0=y0_value,
                 y1=y1_value,
                 xref='x',
@@ -54,7 +57,8 @@ def graficar_precio(df, titulo):
             )
 
         # Add vertical line at 15:30 on this day
-        vertical_line_time = pd.Timestamp(f'{day} 15:30:00', tz='Europe/Madrid')
+        #vertical_line_time = pd.Timestamp(f'{day} 15:30:00', tz='Europe/Madrid')
+        vertical_line_time = END_TIME
         fig.add_shape(
             type="line",
             x0=vertical_line_time, x1=vertical_line_time,
@@ -113,6 +117,8 @@ def graficar_precio(df, titulo):
 
     output_file = f'charts/{titulo}.html'
     fig.write_html(output_file, config=config)
-    print(f"📁 Gráfico interactivo guardado como {output_file}")
+    print(f"\n📁 Gráfico interactivo guardado como {output_file}")
 
     fig.show(config=config)
+
+    return y0_value, y1_value
