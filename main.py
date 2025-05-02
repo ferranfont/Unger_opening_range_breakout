@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 import pandas as pd
 from datetime import datetime
 #import chart
-import plotly_chart as chart
+#import plotly_chart as chart
+import plotly_chart_volume as chart
 import config
 import os
 
@@ -17,6 +18,7 @@ now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 directorio = '../DATA'
 nombre_fichero = 'export_es_2015_formatted.csv'
 ruta_completa = os.path.join(directorio, nombre_fichero)
+print('\nFichero:', ruta_completa, 'importado')
 df = pd.read_csv(ruta_completa)
 
 print("\nDataset:")
@@ -31,8 +33,6 @@ print(df.dtypes)
 if 'Date' in df.columns:
     df['Date'] = pd.to_datetime(df['Date'], utc=True)  # Asegura que tiene zona horaria UTC
     df.set_index('Date', inplace=True)
-
-# Convertir el índice a la zona horaria de Madrid
 df.index = df.index.tz_convert('Europe/Madrid')
 
 # Fechas límite

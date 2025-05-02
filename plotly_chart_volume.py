@@ -1,10 +1,11 @@
 import pandas as pd
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import os
 
 def graficar_precio(df, titulo):
-    if df.empty or not all(col in df.columns for col in ['Open', 'High', 'Low', 'Close']):
-        print("❌ DataFrame vacío o faltan columnas OHLC.")
+    if df.empty or not all(col in df.columns for col in ['Open', 'High', 'Low', 'Close', 'Volumen']):
+        print("❌ DataFrame vacío o faltan columnas OHLC o Volumen.")
         return
 
     os.makedirs("charts", exist_ok=True)
@@ -14,7 +15,10 @@ def graficar_precio(df, titulo):
         df.set_index('Date', inplace=True)
     df.index = df.index.tz_convert('Europe/Madrid')
 
-    fig = go.Figure(data=[go.Candlestick(
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True,
+                        row_heights=[0.85, 0.15], vertical_spacing=0.02)
+
+    fig.add_trace(go.Candlestick(
         x=df.index,
         open=df['Open'],
         high=df['High'],
@@ -23,23 +27,27 @@ def graficar_precio(df, titulo):
         increasing=dict(line=dict(color='black'), fillcolor='rgba(57, 255, 20, 0.5)'),
         decreasing=dict(line=dict(color='black'), fillcolor='red'),
         hoverinfo='none'
-    )])
+    ), row=1, col=1)
 
-    # Loop over each unique date
+    fig.add_trace(go.Bar(
+        x=df.index,
+        y=df['Volumen'],
+        marker_color='blue',
+        opacity=0.5,
+        hoverinfo='skip'
+    ), row=2, col=1)
+
+    # Add rectangles and vertical lines per day
     unique_dates = pd.Series(df.index.date).unique()
     for day in unique_dates:
-        # Build timezone-aware timestamps for the window
         start_time = pd.Timestamp(f'{day} 15:00:00', tz='Europe/Madrid')
         end_time = pd.Timestamp(f'{day} 15:30:00', tz='Europe/Madrid')
 
-        # Filter data in the 15:00–15:30 window
         window_df = df[(df.index >= start_time) & (df.index <= end_time)]
-
         if not window_df.empty:
             y0_value = window_df['Low'].min()
             y1_value = window_df['High'].max()
 
-            # Add rectangle for the time range on this day
             fig.add_shape(
                 type="rect",
                 x0=start_time,
@@ -50,10 +58,10 @@ def graficar_precio(df, titulo):
                 yref='y',
                 line=dict(color='lightblue', width=1),
                 fillcolor='rgba(173, 216, 230, 0.5)',
-                layer='below'
+                layer='below',
+                row=1, col=1
             )
 
-        # Add vertical line at 15:30 on this day
         vertical_line_time = pd.Timestamp(f'{day} 15:30:00', tz='Europe/Madrid')
         fig.add_shape(
             type="line",
@@ -66,18 +74,14 @@ def graficar_precio(df, titulo):
 
     fig.update_layout(
         title=f"Velas Japonesas - {titulo}",
-        xaxis_title="Fecha",
-        yaxis_title="Precio",
         xaxis=dict(
-            showgrid=False,
             showspikes=True,
-            linecolor='darkgrey',
             spikemode='across',
             spikesnap='cursor',
             spikecolor='grey',
             spikethickness=1,
-            color='black',
-
+            linecolor='darkgrey',
+            color='black'
         ),
         yaxis=dict(
             showgrid=True,
@@ -90,7 +94,24 @@ def graficar_precio(df, titulo):
             spikesnap='cursor',
             spikecolor='grey',
             spikethickness=1,
-            color='black',
+            color='black'
+        ),
+        xaxis2=dict(
+            showspikes=True,
+            spikemode='across',
+            spikesnap='cursor',
+            spikecolor='grey',
+            spikethickness=1,
+            linecolor='darkgrey',
+            color='black'
+        ),
+        yaxis2=dict(
+            showgrid=True,
+            gridwidth=1,
+            linecolor='darkgrey',
+            gridcolor='grey',
+            griddash='dot',
+            color='black'
         ),
         xaxis_rangeslider_visible=False,
         width=1800,
