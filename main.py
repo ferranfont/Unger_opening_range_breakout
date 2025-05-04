@@ -7,13 +7,14 @@ from datetime import datetime
 #import plotly_chart as chart
 #import plotly_chart_volume as chart
 import plotly_chart as chart
+import tops_and_bottoms_fractals as tops
 import config
 import os
 now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 load_dotenv()
 
 # Parámetros del Sistema
-fecha = "2025-04-24"  # Fecha de inicio para el cuadradito
+fecha = "2025-04-23"  # Fecha de inicio para el cuadradito
 hora = "15:30:00"     # Hora de inicio para el cuadradito
 lookback_min = 120    # Ventana de tiempo en minutos para el cuadradito
 
@@ -46,7 +47,7 @@ df.index = df.index.tz_convert('Europe/Madrid')
 # Filtrar el rango de fechas
 df_subset = df[(df.index.date >= START_DATE.date()) & (df.index.date <= END_DATE.date())]
 
-print(f"✅ Subdataset creado con {len(df_subset)} registros entre {START_DATE} y {END_DATE}")
+print(f"\n✅ Subdataset: Creado con {len(df_subset)} registros entre {START_DATE} y {END_DATE}")
 print(df_subset)
 
 # Graficación del dataset
@@ -58,4 +59,33 @@ opening_range = y1_value - y0_value
 print(f"\nMínimo del Rango: {y0_value}")
 print(f"Màximo del Rango: {y1_value}")
 print(f"Rango Apertura: {opening_range}")
+
+# Filter only data after END_TIME (15:30)
+after_open_df = df_subset[df_subset.index >= END_TIME]
+
+# Check for high breakout
+breakout_rows = after_open_df[after_open_df['High'] > y1_value]
+if not breakout_rows.empty:
+    first_breakout_time = breakout_rows.index[0]
+    first_breakout_price = breakout_rows.iloc[0]['High']
+    print(f"\n⚡ High_Breakout_Range at {first_breakout_time} with price {first_breakout_price}")
+else:
+    print("\nNo High_Breakout detected after 15:30.")
+
+# Check for low breakdown
+breakdown_rows = after_open_df[after_open_df['Low'] < y0_value]
+if not breakdown_rows.empty:
+    first_breakdown_time = breakdown_rows.index[0]
+    first_breakdown_price = breakdown_rows.iloc[0]['Low']
+    print(f"⚡ Low_Breakdown at Range {first_breakdown_time} with price {first_breakdown_price}")
+else:
+    print("\nNo Low_Breakdown detected after 15:30.")
+
+tops_df = tops.find_first_strong_top(after_open_df, shifts=[1, 2], min_diff=0)
+print("\nPauta Plana_Tops encontrados:")
+print(tops_df)
+patito_negro = tops_df.iloc[0]['High']
+print(f"✅ Entraremos en la primera rotura del nivel: {patito_negro}")
+
+
 

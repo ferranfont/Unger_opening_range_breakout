@@ -69,7 +69,7 @@ def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME):
         )
 
     fig.update_layout(
-        title=f"Velas Japonesas - {titulo}",
+        title=f"{titulo}",
         xaxis_title="Fecha",
         yaxis_title="Precio",
         xaxis=dict(
