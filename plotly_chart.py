@@ -76,7 +76,7 @@ def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_v
             x=[first_breakout_pauta_plana_time],
             y=[first_breakout_pauta_plana_price+0.5],
             mode='markers',
-            marker=dict(color='green', size=11, symbol='triangle-up'),
+            marker=dict(color='green', size=17, symbol='triangle-up'),
             name='First Fractal Top'
         ))
 
