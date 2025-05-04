@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 
-def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value):
+def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro):
     if df.empty or not all(col in df.columns for col in ['Open', 'High', 'Low', 'Close']):
         print("❌ DataFrame vacío o faltan columnas OHLC.")
         return
@@ -64,6 +64,14 @@ def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_v
             opacity=0.5
         )
 
+        fig.add_trace(go.Scatter(
+            x=[patito_negro_time],
+            y=[patito_negro+0.5],
+            mode='markers',
+            marker=dict(color='green', size=11, symbol='circle'),
+            name='First Fractal Top'
+        ))
+
     fig.update_layout(
         title=f"{titulo}",
         xaxis_title="Fecha",
@@ -113,8 +121,9 @@ def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_v
 
     output_file = f'charts/{titulo}.html'
     fig.write_html(output_file, config=config)
-    print(f"\n📁 Gráfico interactivo guardado como {output_file}")
+    print(f"📁 Gráfico interactivo guardado como {output_file}")
 
     fig.show(config=config)
+    print("✅ Gráfico mostrado en el navegador.")
+    
 
-    return y0_value, y1_value

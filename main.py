@@ -26,7 +26,10 @@ START_TIME = END_TIME - pd.Timedelta(minutes=lookback_min)
 print("\nRangos:")
 print(f"Start date: {START_DATE}, \nEnd date: {END_DATE}, \nStart time: {START_TIME}, \nEnd time: {END_TIME}")
 
-# Dataset con toda la data desde el 2015 hasta el 2025  
+# ====================================================
+# DESCARGA DE DATOS 
+# ====================================================
+
 directorio = '../DATA'
 nombre_fichero = 'export_es_2015_formatted.csv'
 ruta_completa = os.path.join(directorio, nombre_fichero)
@@ -51,24 +54,28 @@ print(f"\n✅ Subdataset: Creado con {len(df_subset)} registros entre {START_DAT
 print(df_subset)
 
 
+# ====================================================
+# BUSQUEDA DEL MÁXIMO Y MÍNIMO DEL CUADRADITO 
+# ====================================================
 window_df = df[(df.index >= START_TIME) & (df.index <= END_TIME)]
 
 if not window_df.empty:
     y0_value = window_df['Low'].min()
     y1_value = window_df['High'].max()
 
-# Graficación del dataset
-formated_titulo = START_DATE.strftime('%Y-%m-%d')
-titulo = f"SP500 en fecha {formated_titulo}_plotted on_{now_str}"
-chart.graficar_precio(df_subset, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value)
+
 opening_range = y1_value - y0_value
 
-print(f"\nMínimo del Rango: {y0_value}")
-print(f"Màximo del Rango: {y1_value}")
-print(f"Rango Apertura: {opening_range}")
+print(f"\nMínimo del Rango del Cuadradito: {y0_value}")
+print(f"Màximo del Rango del Cuadradito: {y1_value}")
+print(f"Rango Apertura del Cuadradito: {opening_range}")
 
 # Filter only data after END_TIME (15:30)
 after_open_df = df_subset[df_subset.index >= END_TIME]
+
+# ====================================================
+# ROTURA DEL CUADRADITO
+# ====================================================
 
 # Check for high breakout
 breakout_rows = after_open_df[after_open_df['High'] > y1_value]
@@ -88,16 +95,22 @@ if not breakdown_rows.empty:
 else:
     print("\nNo Low_Breakdown detected after 15:30.")
 
-
-tops_df = tops.find_first_strong_top(after_open_df, shifts=[1, 2], min_diff=0)
+# ====================================================
+# BUSQUEDA DE PAUTA PLANA DESPUÉS DE LA ROTURA 
+# ====================================================
+tops_df = tops.find_first_strong_top(after_open_df, shifts=[1, 2], min_diff=0, y0_value=y0_value, y1_value=y1_value)
 print("\nPauta Plana_Tops encontrados:")
 print(tops_df)
 patito_negro = tops_df.iloc[0]['High']
 patito_negro_time = tops_df.index[0]
 print(f"✅ Entraremos en la primera rotura del nivel: {patito_negro} a las {patito_negro_time}")
 
-
-
+# ====================================================
+# GRAFICACIÓN DE DATOS 
+# ====================================================
+formated_titulo = START_DATE.strftime('%Y-%m-%d')
+titulo = f"SP500 en fecha {formated_titulo}_plotted on_{now_str}"
+chart.graficar_precio(df_subset, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro)
 
 
 

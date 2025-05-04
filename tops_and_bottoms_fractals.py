@@ -1,7 +1,6 @@
 import pandas as pd
-import plotly.graph_objects as go
 
-def find_first_strong_top(df, shifts=[1, 2], min_diff=0, titulo="Price Chart with First Fractal Top"): 
+def find_first_strong_top(df, y0_value, y1_value, shifts=[1, 2], min_diff=0): 
     series = df['High']
     condition = pd.Series(True, index=series.index)
     
@@ -12,10 +11,10 @@ def find_first_strong_top(df, shifts=[1, 2], min_diff=0, titulo="Price Chart wit
         for s in shifts:
             condition &= (series - series.shift(s)).abs() >= min_diff
             condition &= (series - series.shift(-s)).abs() >= min_diff
+
+    condition &= (series > y1_value)
     
     matching_rows = df[condition]    
-
-    
 
     # Return the first matching row (or empty DataFrame)
     if not matching_rows.empty:
