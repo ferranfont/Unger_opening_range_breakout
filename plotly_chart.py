@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 
-def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME):
+def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value):
     if df.empty or not all(col in df.columns for col in ['Open', 'High', 'Low', 'Close']):
         print("❌ DataFrame vacío o faltan columnas OHLC.")
         return
@@ -36,25 +36,21 @@ def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME):
 
 
         # Filter data in the 15:00–15:30 window
-        window_df = df[(df.index >= START_TIME) & (df.index <= END_TIME)]
 
-        if not window_df.empty:
-            y0_value = window_df['Low'].min()
-            y1_value = window_df['High'].max()
 
-            # Add rectangle for the time range on this day
-            fig.add_shape(
-                type="rect",
-                x0=START_TIME,
-                x1=END_TIME,
-                y0=y0_value,
-                y1=y1_value,
-                xref='x',
-                yref='y',
-                line=dict(color='lightblue', width=1),
-                fillcolor='rgba(173, 216, 230, 0.5)',
-                layer='below'
-            )
+        # Add rectangle for the time range on this day
+        fig.add_shape(
+            type="rect",
+            x0=START_TIME,
+            x1=END_TIME,
+            y0=y0_value,
+            y1=y1_value,
+            xref='x',
+            yref='y',
+            line=dict(color='lightblue', width=1),
+            fillcolor='rgba(173, 216, 230, 0.5)',
+            layer='below'
+         )
 
         # Add vertical line at 15:30 on this day
         #vertical_line_time = pd.Timestamp(f'{day} 15:30:00', tz='Europe/Madrid')

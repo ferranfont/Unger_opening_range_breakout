@@ -50,10 +50,17 @@ df_subset = df[(df.index.date >= START_DATE.date()) & (df.index.date <= END_DATE
 print(f"\n✅ Subdataset: Creado con {len(df_subset)} registros entre {START_DATE} y {END_DATE}")
 print(df_subset)
 
+
+window_df = df[(df.index >= START_TIME) & (df.index <= END_TIME)]
+
+if not window_df.empty:
+    y0_value = window_df['Low'].min()
+    y1_value = window_df['High'].max()
+
 # Graficación del dataset
 formated_titulo = START_DATE.strftime('%Y-%m-%d')
 titulo = f"SP500 en fecha {formated_titulo}_plotted on_{now_str}"
-y0_value, y1_value = chart.graficar_precio(df_subset, titulo, START_DATE, END_DATE, START_TIME, END_TIME)
+chart.graficar_precio(df_subset, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value)
 opening_range = y1_value - y0_value
 
 print(f"\nMínimo del Rango: {y0_value}")
@@ -81,11 +88,16 @@ if not breakdown_rows.empty:
 else:
     print("\nNo Low_Breakdown detected after 15:30.")
 
+
 tops_df = tops.find_first_strong_top(after_open_df, shifts=[1, 2], min_diff=0)
 print("\nPauta Plana_Tops encontrados:")
 print(tops_df)
 patito_negro = tops_df.iloc[0]['High']
-print(f"✅ Entraremos en la primera rotura del nivel: {patito_negro}")
+patito_negro_time = tops_df.index[0]
+print(f"✅ Entraremos en la primera rotura del nivel: {patito_negro} a las {patito_negro_time}")
+
+
+
 
 
 
