@@ -17,6 +17,7 @@ load_dotenv()
 fecha = "2025-04-23"  # Fecha de inicio para el cuadradito
 hora = "15:30:00"     # Hora de inicio para el cuadradito
 lookback_min = 120    # Ventana de tiempo en minutos para el cuadradito
+entry_sift = 1         # Desplazamiento para la entrada (1 punto por encima del fractal)
 
 START_DATE = pd.Timestamp(fecha, tz='Europe/Madrid')
 END_DATE = pd.Timestamp(fecha, tz='Europe/Madrid')
@@ -112,7 +113,7 @@ breakout_pauta_plana = after_open_df[after_open_df['Close'] > patito_negro]
 if not breakout_rows.empty:
     first_breakout_pauta_plana_time = breakout_pauta_plana.index[0]
     #first_breakout_pauta_plana_price = breakout_pauta_plana.iloc[0]['Close']  # Se entra al cierre de la Vela
-    first_breakout_pauta_plana_price = patito_negro + 1  # Se entra cuando el precio cruza el nivel patito negro o máximo de la pauta plana
+    first_breakout_pauta_plana_price = patito_negro + entry_sift  # Se entra cuando el precio cruza el nivel patito negro o máximo de la pauta plana
     print(f"\n⚡⚡⚡ Entrada -Compra- al mercado a las: {first_breakout_pauta_plana_time} en el precio {first_breakout_pauta_plana_price}")
 else:
     print("\nNo High_Breakout detected after 15:30.")
