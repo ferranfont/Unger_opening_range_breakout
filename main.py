@@ -123,3 +123,5 @@ else:
 formated_titulo = START_DATE.strftime('%Y-%m-%d')
 titulo = f"SP500 en fecha {formated_titulo}_plotted on_{now_str}"
 chart.graficar_precio(df_subset, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro, first_breakout_pauta_plana_time, first_breakout_pauta_plana_price)
+
+
