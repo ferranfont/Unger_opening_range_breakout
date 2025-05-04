@@ -106,11 +106,20 @@ patito_negro_time = tops_df.index[0]
 print(f"✅ Entraremos en la primera rotura del nivel: {patito_negro} a las {patito_negro_time}")
 
 # ====================================================
+# ENTRADA AL MERCADO 
+# ====================================================
+breakout_pauta_plana = after_open_df[after_open_df['Close'] > patito_negro]
+if not breakout_rows.empty:
+    first_breakout_pauta_plana_time = breakout_pauta_plana.index[0]
+    #first_breakout_pauta_plana_price = breakout_pauta_plana.iloc[0]['Close']  # Se entra al cierre de la Vela
+    first_breakout_pauta_plana_price = patito_negro + 1  # Se entra cuando el precio cruza el nivel patito negro o máximo de la pauta plana
+    print(f"\n⚡⚡⚡ Entrada -Compra- al mercado a las: {first_breakout_pauta_plana_time} en el precio {first_breakout_pauta_plana_price}")
+else:
+    print("\nNo High_Breakout detected after 15:30.")
+
+# ====================================================
 # GRAFICACIÓN DE DATOS 
 # ====================================================
 formated_titulo = START_DATE.strftime('%Y-%m-%d')
 titulo = f"SP500 en fecha {formated_titulo}_plotted on_{now_str}"
-chart.graficar_precio(df_subset, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro)
-
-
-
+chart.graficar_precio(df_subset, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro, first_breakout_pauta_plana_time, first_breakout_pauta_plana_price)
