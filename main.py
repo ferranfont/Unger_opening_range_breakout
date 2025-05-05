@@ -8,16 +8,17 @@ from datetime import datetime
 #import plotly_chart_volume as chart
 import plotly_chart as chart
 import tops_and_bottoms_fractals as tops
+import order_managment as om
 import config
 import os
 now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 load_dotenv()
 
 # Parámetros del Sistema
-fecha = "2025-04-23"  # Fecha de inicio para el cuadradito
+fecha = "2025-04-25"  # Fecha de inicio para el cuadradito
 hora = "15:30:00"     # Hora de inicio para el cuadradito
-lookback_min = 120    # Ventana de tiempo en minutos para el cuadradito
-entry_sift = 1         # Desplazamiento para la entrada (1 punto por encima del fractal)
+lookback_min = 60    # Ventana de tiempo en minutos para el cuadradito
+entry_shift = 1      # Desplazamiento para la entrada (1 punto por encima del fractal)
 
 START_DATE = pd.Timestamp(fecha, tz='Europe/Madrid')
 END_DATE = pd.Timestamp(fecha, tz='Europe/Madrid')
@@ -71,7 +72,7 @@ print(f"\nMínimo del Rango del Cuadradito: {y0_value}")
 print(f"Màximo del Rango del Cuadradito: {y1_value}")
 print(f"Rango Apertura del Cuadradito: {opening_range}")
 
-# Filter only data after END_TIME (15:30)
+# Filter only data after END_TIME (15:30)- BUSCAMOS ENTRAR TAN SÓLO DESPUÉS DE LAS 15:30
 after_open_df = df_subset[df_subset.index >= END_TIME]
 
 # ====================================================
@@ -113,8 +114,10 @@ breakout_pauta_plana = after_open_df[after_open_df['Close'] > patito_negro]
 if not breakout_rows.empty:
     first_breakout_pauta_plana_time = breakout_pauta_plana.index[0]
     #first_breakout_pauta_plana_price = breakout_pauta_plana.iloc[0]['Close']  # Se entra al cierre de la Vela
-    first_breakout_pauta_plana_price = patito_negro + entry_sift  # Se entra cuando el precio cruza el nivel patito negro o máximo de la pauta plana
-    print(f"\n⚡⚡⚡ Entrada -Compra- al mercado a las: {first_breakout_pauta_plana_time} en el precio {first_breakout_pauta_plana_price}")
+    first_breakout_pauta_plana_price = patito_negro + entry_shift  # Se entra cuando el precio cruza el nivel patito negro o máximo de la pauta plana
+    target_filled_time, target_profit, stop_lost_time, stop_lost = om.order_management(after_open_df, y0_value, y1_value, opening_range, patito_negro,first_breakout_pauta_plana_price,first_breakout_pauta_plana_time)
+    print("OBJETIVOS",target_filled_time, "PRECIO OBJETIVO", target_profit)
+
 else:
     print("\nNo High_Breakout detected after 15:30.")
 
@@ -123,6 +126,6 @@ else:
 # ====================================================
 formated_titulo = START_DATE.strftime('%Y-%m-%d')
 titulo = f"SP500 en fecha {formated_titulo}_plotted on_{now_str}"
-chart.graficar_precio(df_subset, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro, first_breakout_pauta_plana_time, first_breakout_pauta_plana_price)
+chart.graficar_precio(df_subset, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro, target_filled_time, target_profit, first_breakout_pauta_plana_time, stop_lost_time, stop_lost, first_breakout_pauta_plana_price)
 
 

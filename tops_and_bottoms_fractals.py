@@ -1,3 +1,5 @@
+# Este código devuelve el primer máximo fuerte en un DataFrame de pandas.
+
 import pandas as pd
 
 def find_first_strong_top(df, y0_value, y1_value, shifts=[1, 2], min_diff=0): 
@@ -13,7 +15,7 @@ def find_first_strong_top(df, y0_value, y1_value, shifts=[1, 2], min_diff=0):
             condition &= (series - series.shift(-s)).abs() >= min_diff
 
     condition &= (series > y1_value)
-    
+
     matching_rows = df[condition]    
 
     # Return the first matching row (or empty DataFrame)

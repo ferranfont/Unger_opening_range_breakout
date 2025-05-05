@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 
-def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro, first_breakout_pauta_plana_time, first_breakout_pauta_plana_price):
+def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro, target_filled_time, target_profit, first_breakout_pauta_plana_time, stop_lost_time, stop_lost, first_breakout_pauta_plana_price):
     if df.empty or not all(col in df.columns for col in ['Open', 'High', 'Low', 'Close']):
         print("❌ DataFrame vacío o faltan columnas OHLC.")
         return
@@ -31,13 +31,6 @@ def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_v
         # Build timezone-aware timestamps for the window
         #start_time = pd.Timestamp(f'{day} 15:00:00', tz='Europe/Madrid')
         #end_time = pd.Timestamp(f'{day} 15:30:00', tz='Europe/Madrid')
-
-        
-
-
-        # Filter data in the 15:00–15:30 window
-
-
         # Add rectangle for the time range on this day
         fig.add_shape(
             type="rect",
@@ -80,6 +73,22 @@ def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_v
             name='First Fractal Top'
         ))
 
+        fig.add_trace(go.Scatter(
+            x=[target_filled_time],
+            y=[target_profit],
+            mode='markers',
+            marker=dict(color='red', size=17, symbol='triangle-down'),
+            name='First Fractal Top'
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=[stop_lost_time],
+            y=[stop_lost],
+            mode='markers',
+            marker=dict(color='red', size=17, symbol='triangle-down'),
+            name='First Fractal Top'
+        ))
+        
     fig.update_layout(
         title=f"{titulo}",
         xaxis_title="Fecha",
@@ -129,7 +138,7 @@ def graficar_precio(df, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_v
 
     output_file = f'charts/{titulo}.html'
     fig.write_html(output_file, config=config)
-    print(f"📁 Gráfico interactivo guardado como {output_file}")
+    print(f"\n📁 Gráfico interactivo guardado como {output_file}")
 
     fig.show(config=config)
     print("✅ Gráfico mostrado en el navegador.")
