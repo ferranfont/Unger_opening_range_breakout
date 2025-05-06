@@ -8,14 +8,16 @@ from datetime import datetime
 #import plotly_chart_volume as chart
 import plotly_chart as chart
 import tops_and_bottoms_fractals as tops
-import order_managment as om
+#import order_managment as om
+import order_entry_managment as oem
+
 import config
 import os
 now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 load_dotenv()
 
 # Parámetros del Sistema
-fecha = "2025-04-25"  # Fecha de inicio para el cuadradito
+fecha = "2025-04-24"  # Fecha de inicio para el cuadradito
 hora = "15:30:00"     # Hora de inicio para el cuadradito
 lookback_min = 60    # Ventana de tiempo en minutos para el cuadradito
 entry_shift = 1      # Desplazamiento para la entrada (1 punto por encima del fractal)
@@ -28,8 +30,24 @@ START_TIME = END_TIME - pd.Timedelta(minutes=lookback_min)
 print("\nRangos:")
 print(f"Start date: {START_DATE}, \nEnd date: {END_DATE}, \nStart time: {START_TIME}, \nEnd time: {END_TIME}")
 
+# Initialize all variables to None to avoid NameError
+first_breakout_pauta_plana_price = None
+first_breakout_pauta_plana_time = None
+first_breakout_bool = False
+first_breakdown_bool = False
+patito_negro_bool = False
+first_breakout_time = None
+first_breakout_price = None
+first_breakdown_time = None
+first_breakdown_price = None
+target_filled_time = None
+target_profit = None
+stop_lost_time = None
+stop_lost = None
+patito_negro_time = None
+
 # ====================================================
-# DESCARGA DE DATOS 
+# 📥 DESCARGA DE DATOS 
 # ====================================================
 
 directorio = '../DATA'
@@ -57,7 +75,7 @@ print(df_subset)
 
 
 # ====================================================
-# BUSQUEDA DEL MÁXIMO Y MÍNIMO DEL CUADRADITO 
+# 📉 BUSQUEDA DEL MÁXIMO Y MÍNIMO DEL CUADRADITO 
 # ====================================================
 window_df = df[(df.index >= START_TIME) & (df.index <= END_TIME)]
 
@@ -76,7 +94,7 @@ print(f"Rango Apertura del Cuadradito: {opening_range}")
 after_open_df = df_subset[df_subset.index >= END_TIME]
 
 # ====================================================
-# ROTURA DEL CUADRADITO
+# 💣 ROTURA DEL CUADRADITO
 # ====================================================
 
 # Check for high breakout
@@ -84,9 +102,8 @@ breakout_rows = after_open_df[after_open_df['High'] > y1_value]
 if not breakout_rows.empty:
     first_breakout_time = breakout_rows.index[0]
     first_breakout_price = breakout_rows.iloc[0]['High']
-    print(f"\n⚡ High_Breakout_Range at {first_breakout_time} with price {first_breakout_price}")
-else:
-    print("\nNo High_Breakout detected after 15:30.")
+    first_breakout_bool = True
+    print(f"⚡ High_Breakout_Range at {first_breakout_time} with price {first_breakout_price}")
 
 # Check for low breakdown
 breakdown_rows = after_open_df[after_open_df['Low'] < y0_value]
@@ -94,19 +111,79 @@ if not breakdown_rows.empty:
     first_breakdown_time = breakdown_rows.index[0]
     first_breakdown_price = breakdown_rows.iloc[0]['Low']
     print(f"⚡ Low_Breakdown at Range {first_breakdown_time} with price {first_breakdown_price}")
-else:
-    print("\nNo Low_Breakdown detected after 15:30.")
 
 # ====================================================
-# BUSQUEDA DE PAUTA PLANA DESPUÉS DE LA ROTURA 
+#  🦢 BUSQUEDA DE PAUTA PLANA DESPUÉS DE LA ROTURA 
 # ====================================================
+
 tops_df = tops.find_first_strong_top(after_open_df, shifts=[1, 2], min_diff=0, y0_value=y0_value, y1_value=y1_value)
 print("\nPauta Plana_Tops encontrados:")
 print(tops_df)
 patito_negro = tops_df.iloc[0]['High']
 patito_negro_time = tops_df.index[0]
+patito_negro_bool = True
 print(f"✅ Entraremos en la primera rotura del nivel: {patito_negro} a las {patito_negro_time}")
 
+# Detect first breakout over Patito Negro, detección punto de entrada al mercado
+if first_breakout_bool and patito_negro_bool:
+    breakout_pauta_plana = after_open_df[after_open_df['Close'] > patito_negro]
+    if not breakout_pauta_plana.empty:
+        first_breakout_pauta_plana_time = breakout_pauta_plana.index[0]
+        first_breakout_pauta_plana_price = breakout_pauta_plana.iloc[0]['Close']
+    else:
+        first_breakout_pauta_plana_time = None
+        first_breakout_pauta_plana_price = None
+
+# ====================================================
+#  🖨️ PRINTS
+# ====================================================
+print("\n=================📊 MARKET PARAMETERS =================")
+print(f"🔹 Y1 Value: {y1_value}")
+print(f"🔹 Y0 Value: {y0_value}")
+print(f"📏 Opening Range: {opening_range}")
+
+print(f"⚡ First Breakout Bool: {first_breakout_bool}")
+print(f"🕒 First Breakout Time: {first_breakout_time}")
+print(f"💲 First Breakout Price: {first_breakout_price}")
+
+print(f"⚡ First Breakdown Bool: {first_breakdown_bool}")
+print(f"🕒 First Breakdown Time: {first_breakdown_time}")
+print(f"💲 First Breakdown Price: {first_breakdown_price}")
+
+print(f"⚡ Fractal Patito Negro Bool(Pauta Plana): {patito_negro_bool}")
+print(f"🕒 Fractal Patito Negro Time(Pauta Plana): {patito_negro_time}")
+print(f"💲 Fractal Patito Negro Price(Pauta Plana): {patito_negro}")
+
+print(f"💡 Buy Entry Time : {first_breakout_pauta_plana_time}")
+print(f"💡 Buy Entry Price: {first_breakout_pauta_plana_price}")
+
+print("=======================================================\n")
+
+
+# ===============================
+# 📞 CALL ORDER MANAGEMENT FUNCTION + ENTRADA AL MERCADO
+# ===============================
+trade_result = oem.order_management_with_iterrows(
+    after_open_df=after_open_df,
+    y0_value=y0_value,
+    y1_value=y1_value,
+    opening_range=opening_range,
+    patito_negro=patito_negro,
+    first_breakout_bool=first_breakout_bool,
+    first_breakout_time=first_breakout_time,
+    first_breakout_price=first_breakout_price,
+    first_breakdown_bool=first_breakdown_bool,
+    first_breakdown_time=first_breakdown_time,
+    first_breakdown_price=first_breakdown_price,
+    patito_negro_bool=patito_negro_bool,
+    patito_negro_time=patito_negro_time,
+    first_breakout_pauta_plana_price=first_breakout_pauta_plana_price,
+    first_breakout_pauta_plana_time=first_breakout_pauta_plana_time
+)
+print("\n=== 📈 TRADE RESULT ===")
+print(trade_result)
+
+'''
 # ====================================================
 # ENTRADA AL MERCADO 
 # ====================================================
@@ -115,17 +192,40 @@ if not breakout_rows.empty:
     first_breakout_pauta_plana_time = breakout_pauta_plana.index[0]
     #first_breakout_pauta_plana_price = breakout_pauta_plana.iloc[0]['Close']  # Se entra al cierre de la Vela
     first_breakout_pauta_plana_price = patito_negro + entry_shift  # Se entra cuando el precio cruza el nivel patito negro o máximo de la pauta plana
-    target_filled_time, target_profit, stop_lost_time, stop_lost = om.order_management(after_open_df, y0_value, y1_value, opening_range, patito_negro,first_breakout_pauta_plana_price,first_breakout_pauta_plana_time)
-    print("OBJETIVOS",target_filled_time, "PRECIO OBJETIVO", target_profit)
 
-else:
-    print("\nNo High_Breakout detected after 15:30.")
+
+
+    target_filled_time, target_profit, stop_lost_time, stop_lost = om.order_management(after_open_df, y0_value, y1_value, opening_range, patito_negro,first_breakout_pauta_plana_price,first_breakout_pauta_plana_time)
+    print( patito_negro_time, patito_negro,first_breakout_pauta_plana_price,first_breakout_pauta_plana_time)
+
+'''
+    
 
 # ====================================================
 # GRAFICACIÓN DE DATOS 
 # ====================================================
 formated_titulo = START_DATE.strftime('%Y-%m-%d')
 titulo = f"SP500 en fecha {formated_titulo}_plotted on_{now_str}"
-chart.graficar_precio(df_subset, titulo, START_DATE, END_DATE, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro, target_filled_time, target_profit, first_breakout_pauta_plana_time, stop_lost_time, stop_lost, first_breakout_pauta_plana_price)
+exit_time = trade_result['exit_time']
+exit_price = trade_result['exit_price']
 
+formated_titulo = START_DATE.strftime('%Y-%m-%d')
+titulo = f"SP500 en fecha {formated_titulo}_plotted on_{now_str}"
 
+exit_time = trade_result['exit_time']
+exit_price = trade_result['exit_price']
+
+chart.graficar_precio(
+    df_subset,
+    titulo,
+    START_TIME,
+    END_TIME,
+    y0_value,
+    y1_value,
+    patito_negro_time,
+    patito_negro,
+    first_breakout_pauta_plana_time,
+    first_breakout_pauta_plana_price,
+    exit_time,
+    exit_price
+)

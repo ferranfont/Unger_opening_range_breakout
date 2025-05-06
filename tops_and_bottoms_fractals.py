@@ -1,4 +1,5 @@
 # Este código devuelve el primer máximo fuerte en un DataFrame de pandas.
+# El denominado  patito negro que corresponde al máximo de la pauta plan
 
 import pandas as pd
 

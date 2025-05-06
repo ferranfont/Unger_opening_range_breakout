@@ -5,8 +5,12 @@ def order_management(after_open_df, y0_value, y1_value, opening_range, patito_ne
     stop_lost_time =None
     stop_lost = None
     
+    if first_breakout_pauta_plana_price is None or first_breakout_pauta_plana_time is None:
+        print("⚠ No buy position triggered — skipping target and stop calculations.")
+        return target_filled_time, target_profit, stop_lost_time, stop_lost
+    
     # definicion del Stop Lost
-    multiplier = 1
+    multiplier = 14
     stop_tolerance = 2
     stop_lost = y0_value - stop_tolerance
     target_profit = first_breakout_pauta_plana_price + opening_range * multiplier
@@ -23,7 +27,7 @@ def order_management(after_open_df, y0_value, y1_value, opening_range, patito_ne
     if not filtered_target.empty:
         target_filled_time = filtered_target.index[0]
         print(f"✅ Target alcanzado a las {target_filled_time} en el precio {target_profit}")
-    else:
+    elif not filtered_stop.empty:
         stop_lost_time = filtered_stop.index[0] 
         print(f"❌ Stop_Lost alcanzado a las {stop_lost_time} en el precio {stop_lost}")
 
