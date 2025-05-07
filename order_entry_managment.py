@@ -38,7 +38,7 @@ def order_management_with_iterrows(
         result['outcome'] = 'no_entry_conditions_met'
         return result
 
-    multiplier = 18
+    multiplier = 3
     stop_tolerance = 2
     stop_lost = y0_value - stop_tolerance
     target_profit = first_breakout_pauta_plana_price + opening_range * multiplier
@@ -53,14 +53,44 @@ def order_management_with_iterrows(
     after_entry_df = after_open_df[after_open_df.index >= first_breakout_pauta_plana_time]
 
     # Calculate MAE and MFE
-    if not after_entry_df.empty:
-        lowest_low = after_entry_df['Low'].min()
-        highest_high = after_entry_df['High'].max()
-        mae = first_breakout_pauta_plana_price - lowest_low  # adverse move
-        mfe = highest_high - first_breakout_pauta_plana_price  # favorable move
-    else:
-        mae = None
-        mfe = None
+    max_profit_so_far = 0
+    max_drawdown_so_far = 0
+    max_favorable_so_far = 0  # MFE tracking
+
+    entry_price = first_breakout_pauta_plana_price
+
+    for idx, row in after_open_df.iterrows():
+        current_high = row['High']
+        current_low = row['Low']
+
+        # Assuming long position
+        current_profit = current_high - entry_price
+
+        # Update maximum profit (MFE)
+        if current_profit > max_favorable_so_far:
+            max_favorable_so_far = current_profit
+
+        # Update max profit for drawdown calculation
+        if current_profit > max_profit_so_far:
+            max_profit_so_far = current_profit
+
+        # Calculate drawdown (MAE)
+        drawdown = max_profit_so_far - (current_high - entry_price)
+        if drawdown > max_drawdown_so_far:
+            max_drawdown_so_far = drawdown
+
+    # Final metrics
+    mae_points = max_drawdown_so_far
+    mae_pct = (mae_points / entry_price) * 100 if entry_price else 0
+    mfe_points = max_favorable_so_far
+
+    # Add to result dictionary
+    result['NAE_points'] = mae_points
+    result['MAE_pct'] = mae_pct
+    result['MFE_points'] = mfe_points
+
+    print(f"📉 Maximum Adverse Excursion (MAE): {mae_points:.2f} points ({mae_pct:.2f}%)")
+    print(f"📈 Maximum Favorable Excursion (MFE): {mfe_points:.2f} points")
 
     # Iterate to determine exit
     for idx, row in after_entry_df.iterrows():
@@ -94,10 +124,6 @@ def order_management_with_iterrows(
     # Calculate final profit
     if result['exit_trade_price'] is not None:
         result['profit'] = result['exit_trade_price'] - first_breakout_pauta_plana_price
-
-    # Add MAE and MFE to result
-    result['mae'] = mae
-    result['mfe'] = mfe
 
     # Run pauta plana study
     pauta_plana_study_result = pp.pauta_plana_study(
