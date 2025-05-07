@@ -15,7 +15,7 @@ now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 load_dotenv()
 
 # Parámetros del Sistema
-fecha = "2025-04-24"  # Fecha de inicio para el cuadradito
+fecha = "2025-04-21"  # Fecha de inicio para el cuadradito
 hora = "15:30:00"     # Hora de inicio para el cuadradito
 lookback_min = 60    # Ventana de tiempo en minutos para el cuadradito
 entry_shift = 1      # Desplazamiento para la entrada (1 punto por encima del fractal)
@@ -207,6 +207,31 @@ chart.graficar_precio(
 )
 
 print("\n=============== 📈 SUMMARY TRADE RESULT ================")
+summary_output_df = pd.DataFrame([trade_result])
+print(summary_output_df.T)
+print("===========================================================\n")
+
+# Save into a CSV and ceate the output DataFrame to be stored
 output_df = pd.DataFrame([trade_result])
-print(output_df.T)
-print("=======================================================\n")
+
+# Make sure outputs directory exists
+os.makedirs('outputs', exist_ok=True)
+
+# Define the CSV file path
+summary_file_path = os.path.join('outputs', 'summary_output_df.csv')
+
+# Check if the file exists
+if os.path.exists(summary_file_path):
+    # If it exists, read the existing CSV
+    existing_df = pd.read_csv(summary_file_path)
+    
+    # Append the new row (aligning columns)
+    updated_df = pd.concat([existing_df, output_df], ignore_index=True)
+    
+    # Write the updated DataFrame back to CSV
+    updated_df.to_csv(summary_file_path, index=False)
+    print(f"✅ Summary updated and saved to {summary_file_path}")
+else:
+    # If it doesn't exist, create it with the new data
+    output_df.to_csv(summary_file_path, index=False)
+    print(f"✅ Summary created and saved to {summary_file_path}")

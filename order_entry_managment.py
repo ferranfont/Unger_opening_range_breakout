@@ -1,5 +1,7 @@
 # GESTIÓN DE LA POSICIÓN, ENTRADA DE ORDENES, TARGET, STOP LOST, PAUTA PLANA
 import pauta_plana_study as pp
+import pandas as pd
+import os
 
 def order_management_with_iterrows(
     after_open_df,
@@ -134,8 +136,6 @@ def order_management_with_iterrows(
         y1_value=y1_value,
         patito_negro=patito_negro
     )
-
-
 
     # Combine trade result and study result
     entry_output = {**result, **pauta_plana_study_result}
