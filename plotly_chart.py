@@ -138,4 +138,4 @@ def graficar_precio(df, titulo, START_TIME, END_TIME, y0_value, y1_value, patito
     print(f"\n📁 Gráfico interactivo guardado como {output_file}")
 
     fig.show(config=config)
-    print("🖥️ Gráfico mostrado en el navegador.")
+    print("🖥️  Gráfico mostrado en el navegador.")

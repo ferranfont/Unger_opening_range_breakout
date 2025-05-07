@@ -9,14 +9,13 @@ import plotly_chart as chart
 import tops_and_bottoms_fractals as tops
 #import order_managment as om
 import order_entry_managment as oem
-
 import config
 import os
 now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 load_dotenv()
 
 # Parámetros del Sistema
-fecha = "2025-03-21"  # Fecha de inicio para el cuadradito
+fecha = "2025-04-23"  # Fecha de inicio para el cuadradito
 hora = "15:30:00"     # Hora de inicio para el cuadradito
 lookback_min = 60    # Ventana de tiempo en minutos para el cuadradito
 entry_shift = 1      # Desplazamiento para la entrada (1 punto por encima del fractal)
@@ -54,9 +53,9 @@ ruta_completa = os.path.join(directorio, nombre_fichero)
 print('\nFichero:', ruta_completa, 'importado')
 df = pd.read_csv(ruta_completa)
 
-print("\nFull Dataset:")
+print("\n=============== 🔍 df  ===============")
 print(df)
-
+print(f"Segment Shape: {df.shape}")
 # CREACIÓN DE UN SUBDATASET CON UN RANGO 
 # Convertir los límites de fecha
 # Asegurarte de que 'Date' está presente
@@ -68,8 +67,10 @@ df.index = df.index.tz_convert('Europe/Madrid')
 # Filtrar el rango de fechas
 df_subset = df[(df.index.date >= START_DATE.date()) & (df.index.date <= END_DATE.date())]
 
-print(f"\n✅ Subdataset: Creado con {len(df_subset)} registros entre {START_DATE} y {END_DATE}")
+print("\n=============== 🔍 df_subset  ==============")
+print(f"✅ Subdataset: Creado con {len(df_subset)} registros entre {START_DATE} y {END_DATE}")
 print(df_subset)
+print(f"Segment Shape: {df_subset.shape}")
 
 
 # ====================================================
@@ -116,6 +117,7 @@ print(tops_df)
 patito_negro = tops_df.iloc[0]['High']
 patito_negro_time = tops_df.index[0]
 patito_negro_bool = True
+
 print(f"✅ Entraremos en la primera rotura del nivel: {patito_negro} a las {patito_negro_time}")
 
 # Detect first breakout over Patito Negro, ENTRADA AL MERCADO
@@ -151,7 +153,7 @@ print(f"💲 Fractal Patito Negro Price(Pauta Plana): {patito_negro}")
 print(f"💡 Buy Entry Time : {first_breakout_pauta_plana_time}")
 print(f"💡 Buy Entry Price: {first_breakout_pauta_plana_price}")
 
-print("=======================================================\n")
+print("===================================================\n")
 
 # ===============================
 # 📞 CALL ORDER MANAGEMENT FUNCTION + ENTRADA AL MERCADO
@@ -161,6 +163,7 @@ trade_result = oem.order_management_with_iterrows(
     y0_value=y0_value,
     y1_value=y1_value,
     opening_range=opening_range,
+    END_TIME=END_TIME,
     patito_negro=patito_negro,
     first_breakout_bool=first_breakout_bool,
     first_breakout_time=first_breakout_time,
@@ -173,22 +176,20 @@ trade_result = oem.order_management_with_iterrows(
     first_breakout_pauta_plana_price=first_breakout_pauta_plana_price,
     first_breakout_pauta_plana_time=first_breakout_pauta_plana_time
 )
-print("\n=== 📈 TRADE RESULT ===")
-print(trade_result)
 
-# ====================================================
+
 # GRAFICACIÓN DE DATOS 
 # ====================================================
 formated_titulo = START_DATE.strftime('%Y-%m-%d')
 titulo = f"SP500 en fecha {formated_titulo}_plotted on_{now_str}"
-exit_time = trade_result['exit_time']
-exit_price = trade_result['exit_price']
+exit_time = trade_result['exit_trade_time']
+exit_price = trade_result['exit_trade_price']
 
 formated_titulo = START_DATE.strftime('%Y-%m-%d')
 titulo = f"SP500 en fecha {formated_titulo}_plotted on_{now_str}"
 
-exit_time = trade_result['exit_time']
-exit_price = trade_result['exit_price']
+exit_time = trade_result['exit_trade_time']
+exit_price = trade_result['exit_trade_price']
 
 chart.graficar_precio(
     df_subset,
@@ -204,3 +205,8 @@ chart.graficar_precio(
     exit_time,
     exit_price
 )
+
+print("\n=============== 📈 SUMMARY TRADE RESULT ================")
+output_df = pd.DataFrame([trade_result])
+print(output_df.T)
+print("===========================================================\n")
