@@ -1,5 +1,4 @@
-# Sistema que lee y formatea data de Ninjatrader
-
+# ANDREA UNGER TRADING SYSTEM BREAK OUT OPENING RANGE
 from dotenv import load_dotenv
 import pandas as pd
 from datetime import datetime
@@ -17,7 +16,7 @@ now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 load_dotenv()
 
 # Parámetros del Sistema
-fecha = "2025-04-24"  # Fecha de inicio para el cuadradito
+fecha = "2025-03-21"  # Fecha de inicio para el cuadradito
 hora = "15:30:00"     # Hora de inicio para el cuadradito
 lookback_min = 60    # Ventana de tiempo en minutos para el cuadradito
 entry_shift = 1      # Desplazamiento para la entrada (1 punto por encima del fractal)
@@ -49,7 +48,6 @@ patito_negro_time = None
 # ====================================================
 # 📥 DESCARGA DE DATOS 
 # ====================================================
-
 directorio = '../DATA'
 nombre_fichero = 'export_es_2015_formatted.csv'
 ruta_completa = os.path.join(directorio, nombre_fichero)
@@ -60,7 +58,7 @@ print("\nFull Dataset:")
 print(df)
 
 # CREACIÓN DE UN SUBDATASET CON UN RANGO 
-#   Convertir los límites de fecha
+# Convertir los límites de fecha
 # Asegurarte de que 'Date' está presente
 if 'Date' in df.columns:
     df['Date'] = pd.to_datetime(df['Date'], utc=True)  # Asegura que tiene zona horaria UTC
@@ -83,7 +81,6 @@ if not window_df.empty:
     y0_value = window_df['Low'].min()
     y1_value = window_df['High'].max()
 
-
 opening_range = y1_value - y0_value
 
 print(f"\nMínimo del Rango del Cuadradito: {y0_value}")
@@ -96,8 +93,6 @@ after_open_df = df_subset[df_subset.index >= END_TIME]
 # ====================================================
 # 💣 ROTURA DEL CUADRADITO
 # ====================================================
-
-# Check for high breakout
 breakout_rows = after_open_df[after_open_df['High'] > y1_value]
 if not breakout_rows.empty:
     first_breakout_time = breakout_rows.index[0]
@@ -115,7 +110,6 @@ if not breakdown_rows.empty:
 # ====================================================
 #  🦢 BUSQUEDA DE PAUTA PLANA DESPUÉS DE LA ROTURA 
 # ====================================================
-
 tops_df = tops.find_first_strong_top(after_open_df, shifts=[1, 2], min_diff=0, y0_value=y0_value, y1_value=y1_value)
 print("\nPauta Plana_Tops encontrados:")
 print(tops_df)
@@ -124,15 +118,15 @@ patito_negro_time = tops_df.index[0]
 patito_negro_bool = True
 print(f"✅ Entraremos en la primera rotura del nivel: {patito_negro} a las {patito_negro_time}")
 
-# Detect first breakout over Patito Negro, detección punto de entrada al mercado
+# Detect first breakout over Patito Negro, ENTRADA AL MERCADO
 if first_breakout_bool and patito_negro_bool:
-    breakout_pauta_plana = after_open_df[after_open_df['Close'] > patito_negro]
+    breakout_pauta_plana = after_open_df[
+        (after_open_df.index >= patito_negro_time) &
+        (after_open_df['Close'] > patito_negro)
+    ]
     if not breakout_pauta_plana.empty:
         first_breakout_pauta_plana_time = breakout_pauta_plana.index[0]
         first_breakout_pauta_plana_price = breakout_pauta_plana.iloc[0]['Close']
-    else:
-        first_breakout_pauta_plana_time = None
-        first_breakout_pauta_plana_price = None
 
 # ====================================================
 #  🖨️ PRINTS
@@ -159,7 +153,6 @@ print(f"💡 Buy Entry Price: {first_breakout_pauta_plana_price}")
 
 print("=======================================================\n")
 
-
 # ===============================
 # 📞 CALL ORDER MANAGEMENT FUNCTION + ENTRADA AL MERCADO
 # ===============================
@@ -182,24 +175,6 @@ trade_result = oem.order_management_with_iterrows(
 )
 print("\n=== 📈 TRADE RESULT ===")
 print(trade_result)
-
-'''
-# ====================================================
-# ENTRADA AL MERCADO 
-# ====================================================
-breakout_pauta_plana = after_open_df[after_open_df['Close'] > patito_negro]
-if not breakout_rows.empty:
-    first_breakout_pauta_plana_time = breakout_pauta_plana.index[0]
-    #first_breakout_pauta_plana_price = breakout_pauta_plana.iloc[0]['Close']  # Se entra al cierre de la Vela
-    first_breakout_pauta_plana_price = patito_negro + entry_shift  # Se entra cuando el precio cruza el nivel patito negro o máximo de la pauta plana
-
-
-
-    target_filled_time, target_profit, stop_lost_time, stop_lost = om.order_management(after_open_df, y0_value, y1_value, opening_range, patito_negro,first_breakout_pauta_plana_price,first_breakout_pauta_plana_time)
-    print( patito_negro_time, patito_negro,first_breakout_pauta_plana_price,first_breakout_pauta_plana_time)
-
-'''
-    
 
 # ====================================================
 # GRAFICACIÓN DE DATOS 

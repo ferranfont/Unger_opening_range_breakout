@@ -82,7 +82,7 @@ def graficar_precio(df, titulo, START_TIME, END_TIME, y0_value, y1_value, patito
         x=[first_breakout_pauta_plana_time, exit_time],
         y=[first_breakout_pauta_plana_price + 0.5, exit_price],
         mode='lines',
-        line=dict(color='gray', width=2),
+        line=dict(color='gray', width=2, dash='dot'),
         name='Entry to Exit'
     ))
 

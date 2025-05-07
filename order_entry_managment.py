@@ -15,7 +15,7 @@ def order_management_with_iterrows(
     first_breakout_pauta_plana_price,
     first_breakout_pauta_plana_time
 ):
-    
+
     # Initialize results
     result = {
         "entry_time": first_breakout_pauta_plana_time,
@@ -37,7 +37,7 @@ def order_management_with_iterrows(
         return result
 
     # Define stop and target levels
-    multiplier = 1
+    multiplier = 18
     stop_tolerance = 2
     stop_lost = y0_value - stop_tolerance
     target_profit = first_breakout_pauta_plana_price + opening_range * multiplier
@@ -49,8 +49,11 @@ def order_management_with_iterrows(
     print(f"Stop Price: {stop_lost}")
     print("============================\n")
 
-    # Iterate through DataFrame chronologically
-    for idx, row in after_open_df.iterrows():
+    # Filter only rows after the entry time
+    after_entry_df = after_open_df[after_open_df.index >= first_breakout_pauta_plana_time]
+
+    # Iterate through DataFrame chronologically after entry
+    for idx, row in after_entry_df.iterrows():
         high = row['High']
         low = row['Low']
 
@@ -69,11 +72,12 @@ def order_management_with_iterrows(
 
     # If neither target nor stop was hit, close at last candle
     if result['outcome'] is None:
-        last_idx = after_open_df.index[-1]
-        last_close = after_open_df.iloc[-1]['Close']
+        last_idx = after_entry_df.index[-1]
+        last_close = after_entry_df.iloc[-1]['Close']
         result['exit_time'] = last_idx
         result['exit_price'] = last_close
         result['outcome'] = 'close_at_end'
         print(f"🔚 No target or stop hit — closing at end of session: {last_idx} with price {last_close}")
-    
+
     return result
+
