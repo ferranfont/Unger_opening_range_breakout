@@ -28,7 +28,8 @@ def order_management_with_iterrows(
         "trade_duration": None,
         "entry_trade_price": first_breakout_pauta_plana_price,
         "exit_trade_price": None,
-        "outcome": None, #target, stop...
+        "profit": None,
+        "outcome": None, # Label: target, stop...
     }
 
     if not first_breakout_bool or not patito_negro_bool:
@@ -54,7 +55,10 @@ def order_management_with_iterrows(
 
     after_entry_df = after_open_df[after_open_df.index >= first_breakout_pauta_plana_time]
 
-    # Calculate MAE and MFE
+    # Calculate MAE (Maximum Adverse Excursion) ensuring stop_lost is set
+    if stop_lost is None:
+        raise ValueError("The variable 'stop_lost' (stop loss price) is not set before MAE calculation.")
+
     max_profit_so_far = 0
     max_drawdown_so_far = 0
     max_favorable_so_far = 0  # MFE tracking
@@ -78,8 +82,11 @@ def order_management_with_iterrows(
 
         # Calculate drawdown (MAE)
         drawdown = max_profit_so_far - (current_high - entry_price)
-        if drawdown > max_drawdown_so_far:
-            max_drawdown_so_far = drawdown
+
+        # Ensure we don't exceed the stop loss level
+        potential_drawdown = max(entry_price - stop_lost, drawdown)
+        if potential_drawdown > max_drawdown_so_far:
+            max_drawdown_so_far = potential_drawdown
 
     # Final metrics
     mae_points = max_drawdown_so_far
@@ -87,12 +94,13 @@ def order_management_with_iterrows(
     mfe_points = max_favorable_so_far
 
     # Add to result dictionary
-    result['NAE_points'] = mae_points
+    result['MAE_points'] = mae_points
     result['MAE_pct'] = mae_pct
     result['MFE_points'] = mfe_points
 
     print(f"📉 Maximum Adverse Excursion (MAE): {mae_points:.2f} points ({mae_pct:.2f}%)")
     print(f"📈 Maximum Favorable Excursion (MFE): {mfe_points:.2f} points")
+
 
     # Iterate to determine exit
     for idx, row in after_entry_df.iterrows():
@@ -129,13 +137,15 @@ def order_management_with_iterrows(
 
     # Run pauta plana study
     pauta_plana_study_result = pp.pauta_plana_study(
-        after_open_df=after_open_df,
-        END_TIME=END_TIME,
-        first_breakout_pauta_plana_time=first_breakout_pauta_plana_time,
-        y0_value=y0_value,
-        y1_value=y1_value,
-        patito_negro=patito_negro
+        after_open_df,
+        END_TIME,
+        first_breakout_pauta_plana_time,
+        y0_value,
+        y1_value,
+        patito_negro_time,
+        patito_negro
     )
+
 
     # Combine trade result and study result
     entry_output = {**result, **pauta_plana_study_result}

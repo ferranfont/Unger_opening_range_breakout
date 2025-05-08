@@ -2,8 +2,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 
-   
-def graficar_precio(df, titulo, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro, first_breakout_pauta_plana_time,  first_breakout_pauta_plana_price, exit_time, exit_price):
+
+def graficar_precio(df, titulo, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro, first_breakout_pauta_plana_time,  first_breakout_pauta_plana_price, exit_time, exit_price):   
     if df.empty or not all(col in df.columns for col in ['Open', 'High', 'Low', 'Close']):
         print("❌ DataFrame vacío o faltan columnas OHLC.")
         return
