@@ -56,7 +56,7 @@ def order_management_with_iterrows(
         return result
 
 
-    multiplier = 3
+    multiplier = 1
     stop_tolerance = 2
     stop_lost = y0_value - stop_tolerance
     target_profit = first_breakout_pauta_plana_price + opening_range * multiplier
