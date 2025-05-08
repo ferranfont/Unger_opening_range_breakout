@@ -19,11 +19,16 @@ fecha = "2025-04-17"  # Fecha de inicio para el cuadradito
 hora = "15:30:00"     # Hora de inicio para el cuadradito
 lookback_min = 60    # Ventana de tiempo en minutos para el cuadradito
 entry_shift = 1      # Desplazamiento para la entrada (1 punto por encima del fractal)
+too_late_patito_negro= "16:30:00"  # Hora límite exigida para la formación del fractal patito negro para anular la entrada
+too_late_brake_fractal_pauta_plana = "17:30:00"  # Hora límite exigida para rotura del fractal patito negro para anular la entrada
+
 
 START_DATE = pd.Timestamp(fecha, tz='Europe/Madrid')
 END_DATE = pd.Timestamp(fecha, tz='Europe/Madrid')
 END_TIME = pd.Timestamp(f'{fecha} {hora}', tz='Europe/Madrid')
 START_TIME = END_TIME - pd.Timedelta(minutes=lookback_min)
+too_late_patito_negro = pd.Timestamp(f'{fecha} {too_late_patito_negro}', tz='Europe/Madrid')
+too_late_brake_fractal_pauta_plana = pd.Timestamp(f'{fecha} {too_late_patito_negro}', tz='Europe/Madrid')
 
 print("\nRangos:")
 print(f"Start date: {START_DATE}, \nEnd date: {END_DATE}, \nStart time: {START_TIME}, \nEnd time: {END_TIME}")
@@ -174,7 +179,9 @@ trade_result = oem.order_management_with_iterrows(
     patito_negro_bool=patito_negro_bool,
     patito_negro_time=patito_negro_time,
     first_breakout_pauta_plana_price=first_breakout_pauta_plana_price,
-    first_breakout_pauta_plana_time=first_breakout_pauta_plana_time
+    first_breakout_pauta_plana_time=first_breakout_pauta_plana_time,
+    too_late_patito_negro=too_late_patito_negro,
+    too_late_brake_fractal_pauta_plana=too_late_brake_fractal_pauta_plana
 )
 
 

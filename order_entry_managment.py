@@ -19,9 +19,11 @@ def order_management_with_iterrows(
     patito_negro_bool,
     patito_negro_time,
     first_breakout_pauta_plana_price,
-    first_breakout_pauta_plana_time
+    first_breakout_pauta_plana_time,
+    too_late_patito_negro,
+    too_late_brake_fractal_pauta_plana
 ):
-    
+
     result = {
         "entry_trade_time": first_breakout_pauta_plana_time,
         "exit_trade_time": None,
@@ -33,13 +35,26 @@ def order_management_with_iterrows(
     }
 
     if not first_breakout_bool or not patito_negro_bool:
-        print("⚠ No valid entry conditions met — exiting without trade.")
+        print("☢️  No valid entry conditions met — exiting without entry.")
         return result
 
     if first_breakout_pauta_plana_price is None or first_breakout_pauta_plana_time is None:
-        print("⚠ Missing breakout pauta plana price or time — skipping trade.")
+        print("☢️  Missing breakout pauta plana price or time — skipping entry.")
         result['outcome'] = 'no_entry_conditions_met'
         return result
+    
+    # no operamos si el fractal o patito negro es realizado muy tarde
+    if patito_negro_time > too_late_patito_negro:
+        print("☢️  Patito Negro breakout time is too late — skipping entry.")
+        result['outcome'] = 'no_entry'
+        return result
+    
+    # no operamos si la entrada es muy tarde
+    if first_breakout_pauta_plana_time is None or first_breakout_pauta_plana_time > too_late_brake_fractal_pauta_plana:
+        print("☢️  Fractal Break Out too late - skipping entry")
+        result['outcome'] = 'no_entry_due_to_late_time'
+        return result
+
 
     multiplier = 3
     stop_tolerance = 2
