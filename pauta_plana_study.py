@@ -9,6 +9,11 @@ def pauta_plana_study(after_open_df, END_TIME, first_breakout_pauta_plana_time, 
     print(f"Base DataFrame Shape: {after_open_df.shape}")
 
     # Ensure correct time window (start ≤ index ≤ end)
+    if first_breakout_pauta_plana_time is None:
+        print("❌ Error: first_breakout_pauta_plana_time is None. Cannot create study segment.")
+        return {}
+
+    # Si está definido, continúa normalmente
     study_df = after_open_df[(after_open_df.index >= END_TIME) & (after_open_df.index <= first_breakout_pauta_plana_time)]
 
     print("\n===== 🔍 Filtered study_df (Segment) =====")

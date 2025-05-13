@@ -2,7 +2,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 
-def graficar_precio(df, titulo, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro, first_breakout_pauta_plana_time,  first_breakout_pauta_plana_price, exit_time, exit_price, fractal_bottoms_df=None): 
+def graficar_precio(df, titulo, START_TIME, END_TIME, y0_value, y1_value, patito_negro_time, patito_negro, first_breakout_pauta_plana_time,  first_breakout_pauta_plana_price, entry_price, entry_time, exit_time, exit_price, fractal_bottoms_df=None): 
 
     if df.empty or not all(col in df.columns for col in ['Open', 'High', 'Low', 'Close']):
         print("❌ DataFrame vacío o faltan columnas OHLC.")
@@ -53,18 +53,27 @@ def graficar_precio(df, titulo, START_TIME, END_TIME, y0_value, y1_value, patito
     # Add fractal top marker (Patito Negro)
     fig.add_trace(go.Scatter(
         x=[patito_negro_time],
-        y=[patito_negro + 0.5],
+        y=[patito_negro],
         mode='markers',
         marker=dict(color='green', size=11, symbol='circle'),
         name='Fractal Patito Negro'
     ))
 
-    # Add entry point marker
+    # Add Pauta Plana point 
     fig.add_trace(go.Scatter(
         x=[first_breakout_pauta_plana_time],
-        y=[first_breakout_pauta_plana_price + 0.5],
+        y=[first_breakout_pauta_plana_price],
         mode='markers',
         marker=dict(color='green', size=10, symbol='diamond'),
+        name='Entry Point'
+    ))
+
+    # Add entry
+    fig.add_trace(go.Scatter(
+        x=[entry_time],
+        y=[entry_price],
+        mode='markers',
+        marker=dict(color='green', size=15, symbol='triangle-up'),
         name='Entry Point'
     ))
 
@@ -73,30 +82,29 @@ def graficar_precio(df, titulo, START_TIME, END_TIME, y0_value, y1_value, patito
         x=[exit_time],
         y=[exit_price],
         mode='markers',
-        marker=dict(color='red', size=17, symbol='triangle-down'),
+        marker=dict(color='red', size=15, symbol='triangle-down'),
         name='Exit Point'
     ))
     
-    # Add dotted line between entry and exit points
     fig.add_trace(go.Scatter(
-        x=[first_breakout_pauta_plana_time, exit_time],
-        y=[first_breakout_pauta_plana_price + 0.5, exit_price],
+        x=[entry_time, exit_time],     # ✅ Tiempo en el eje X
+        y=[entry_price, exit_price],   # ✅ Precio en el eje Y
         mode='lines',
         line=dict(color='gray', width=2, dash='dot'),
         name='Entry to Exit'
     ))
-    
+
     # Add red dots for fractal bottoms if provided
     if fractal_bottoms_df is not None and not fractal_bottoms_df.empty:
         fig.add_trace(go.Scatter(
             x=fractal_bottoms_df.index,
-            y=fractal_bottoms_df['Low']-0.25,
+            y=fractal_bottoms_df['Low'],
             mode='markers',
-            marker=dict(color='red', size=7, symbol='circle'),
+            marker=dict(color='red', size=12, symbol='circle'),
             name='Fractal Bottoms'
         ))
 
-
+    
     fig.update_layout(
         title=f"{titulo}",
         xaxis_title="Fecha",

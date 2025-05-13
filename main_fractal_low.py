@@ -5,12 +5,11 @@ from datetime import datetime
 #import chart
 #import plotly_chart as chart
 #import plotly_chart_volume as chart
-import plotly_chart as chart
+import plotly_chart_fractal_bottom as chart
 import tops_and_bottoms_fractals as tops
 import find_strong_bottoms as bottoms
 #import order_managment as om
-import order_entry_managment as oem
-import config
+import order_entry_managment_fractal_low as oem
 import os
 now_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 load_dotenv()
@@ -33,8 +32,8 @@ for fecha in dates:
     hora = "15:30:00"     # Hora de inicio para el cuadradito
     lookback_min = 60    # Ventana de tiempo en minutos para el cuadradito
     entry_shift = 1      # Desplazamiento para la entrada (1 punto por encima del fractal)
-    too_late_patito_negro= "16:30:00"  # Hora límite exigida para la formación del fractal patito negro para anular la entrada
-    too_late_brake_fractal_pauta_plana = "17:00:00"  # Hora límite exigida para rotura del fractal patito negro para anular la entrada
+    too_late_patito_negro= "19:30:00"  # Hora límite exigida para la formación del fractal patito negro para anular la entrada
+    too_late_brake_fractal_pauta_plana = "20:00:00"  # Hora límite exigida para rotura del fractal patito negro para anular la entrada
 
 
     START_DATE = pd.Timestamp(fecha, tz='Europe/Madrid')
@@ -67,12 +66,12 @@ for fecha in dates:
     directorio = '../DATA'
     nombre_fichero = 'export_es_2015_formatted.csv'
     ruta_completa = os.path.join(directorio, nombre_fichero)
-    print("\n=============== 🔍 df  ===============")
+    print("\n======================== 🔍 df  ===========================")
     df = pd.read_csv(ruta_completa)
-    print('\nFichero:', ruta_completa, 'importado')
+    print('Fichero:', ruta_completa, 'importado')
     print(f"Características del Fichero Base: {df.shape}")
     # leo el vector o lista con las fechas a analizar
-    # ====================================================
+    # ==========================================================
 
     # CREACIÓN DE UN SUBDATASET CON UN RANGO 
     if 'Date' in df.columns:
@@ -81,8 +80,8 @@ for fecha in dates:
     df.index = df.index.tz_convert('Europe/Madrid')
     df_subset = df[(df.index.date >= START_DATE.date()) & (df.index.date <= END_DATE.date())]
 
-    print("\n=============== 🔍 df_subset  ==============")
-    print(f"✅ Subsegmento: Creado con {len(df_subset)} registros entre {START_DATE} y {END_DATE}")
+    print("\n====================== 🔍 df_subset  =======================")
+    print(f"Subsegmento: Creado con {len(df_subset)} registros entre {START_DATE} y {END_DATE}")
     print(f"Característica del Subsegmento: {df_subset.shape}")
 
 
@@ -101,20 +100,20 @@ for fecha in dates:
 
     # Filter only data after END_TIME (15:30)- BUSCAMOS ENTRAR TAN SÓLO DESPUÉS DE LAS 15:30
     after_open_df = df_subset[df_subset.index >= END_TIME] # filas después de la rotura
-    breakout_rows = after_open_df[after_open_df['High'] > y1_value] # filas por encima de la rotura y1_value
+    breakout_rows = after_open_df[after_open_df['Close'] > y1_value] # filas por encima de la rotura y1_value
     if not breakout_rows.empty:
         first_breakout_time = breakout_rows.index[0]
-        first_breakout_price = breakout_rows.iloc[0]['High']
+        first_breakout_price = breakout_rows.iloc[0]['Close']
         first_breakout_bool = True
         print(f"⚡ High_Breakout_Range TRUE at: {first_breakout_time} with price {first_breakout_price}")
 
     # Check for low breakdown
-    breakdown_rows = after_open_df[after_open_df['Low'] < y0_value]
+    breakdown_rows = after_open_df[after_open_df['Close'] < y0_value]
     if not breakdown_rows.empty:
         first_breakdown_time = breakdown_rows.index[0]
-        first_breakdown_price = breakdown_rows.iloc[0]['Low']
-        first_break_bodown_bool = True
-        print(f"⚡ Low_Breakdown TRUE at:  {firt_breakdown_time} with price {first_breakdown_price}")
+        first_breakdown_price = breakdown_rows.iloc[0]['Close']
+        first_breakdown_bool = True
+        print(f"⚡ Low_Breakdown TRUE at:  {first_breakdown_time} with price {first_breakdown_price}")
 
     # =========================================================================================
     #  🦢 BUSQUEDA DE PAUTA PLANA DESPUÉS DE LA ROTURA +  RETROCESOS CON STRONG FRACTAL LOW
@@ -127,7 +126,7 @@ for fecha in dates:
         patito_negro = tops_df.iloc[0]['High']
         patito_negro_time = tops_df.index[0]
         patito_negro_bool = True
-        print(f"✅ Entraremos en la primera rotura del nivel: {patito_negro} generado a las {patito_negro_time}")
+        print(f"✅ Pauta Plana (patito Negro) en el nivel: {patito_negro} generado a las {patito_negro_time}")
     else:
         patito_negro = None
         patito_negro_time = None
@@ -146,15 +145,28 @@ for fecha in dates:
             first_breakout_pauta_plana_price = breakout_pauta_plana.iloc[0]['Close']
     
     # BÚSQUEDA DE FRACTALES (LOW) en la pauta plana
-    fractal_bottoms_df, fractal_bottom_bool = bottoms.find_all_strong_bottoms(after_open_df)
+
+    # BÚSQUEDA DE FRACTALES (LOW) SOLO DESPUÉS DEL BREAKOUT
+    if first_breakout_bool:
+        df_after_breakout = after_open_df[after_open_df.index >= first_breakout_time]
+        fractal_bottoms_df, fractal_bottom_bool = bottoms.find_all_strong_bottoms(df_after_breakout)
+    else:
+        fractal_bottoms_df = pd.DataFrame()
+        fractal_bottom_bool = False
+
     print("\nFractales bottoms en pauta plana encontrados:")
     print(fractal_bottom_bool)
     print(fractal_bottoms_df)
-    fractal_bottom_price = fractal_bottoms_df['Low'].iloc[0]
-    fractal_bottom_time = fractal_bottoms_df.index[0]
 
-  
-    
+    if fractal_bottom_bool and not fractal_bottoms_df.empty and 'Low' in fractal_bottoms_df.columns:
+        fractal_bottom_price = fractal_bottoms_df['Low'].iloc[0]
+        fractal_bottom_time = fractal_bottoms_df.index[0]
+    else:
+        fractal_bottom_price = None
+        fractal_bottom_time = None
+        fractal_bottom_bool = False
+        print("⚠️ No se encontró ningún fractal bottom válido tras el breakout.")
+   
     # ====================================================
     #  🖨️ PRINTS
     # ====================================================
@@ -201,48 +213,54 @@ for fecha in dates:
         patito_negro_time=patito_negro_time,
         first_breakout_pauta_plana_price=first_breakout_pauta_plana_price,
         first_breakout_pauta_plana_time=first_breakout_pauta_plana_time,
+        fractal_bottom_bool=fractal_bottom_bool,
+        fractal_bottom_price=fractal_bottom_price,
+        fractal_bottom_time=fractal_bottom_time,
         too_late_patito_negro=too_late_patito_negro,
         too_late_brake_fractal_pauta_plana=too_late_brake_fractal_pauta_plana
     )
-
-    # ====================================================
-    # GRAFICACIÓN DE DATOS 
-    # ====================================================
-    formated_titulo = START_DATE.strftime('%Y-%m-%d')
-    titulo = f"SP500 en fecha {formated_titulo}_plotted on_{now_str}"
-    exit_time = trade_result['exit_trade_time']
-    exit_price = trade_result['exit_trade_price']
-
-    formated_titulo = START_DATE.strftime('%Y-%m-%d')
-    titulo = f"SP500 en fecha {formated_titulo}_plotted on_{now_str}"
-
-    exit_time = trade_result['exit_trade_time']
-    exit_price = trade_result['exit_trade_price']
-
-    if first_breakout_pauta_plana_price is not None and first_breakout_pauta_plana_time is not None:
-        chart.graficar_precio(
-            df_subset,
-            titulo,
-            START_TIME,
-            END_TIME,
-            y0_value,
-            y1_value,
-            patito_negro_time,
-            patito_negro,
-            first_breakout_pauta_plana_time,
-            first_breakout_pauta_plana_price,
-            exit_time,
-            exit_price,
-            fractal_bottoms_df=fractal_bottoms_df
-        )
-    else:
-        print("⚠️ Skipping chart generation — no valid entry breakout data available.")
-
 
     print("\n=============== 📈 SUMMARY TRADE RESULT ================")
     summary_output_df = pd.DataFrame([trade_result])
     print(summary_output_df.T)
     print("===========================================================\n")
+    if trade_result is None:
+        print("⚠️ No se ejecutó ninguna operación. trade_result es None.")
+        continue  # Salta a la siguiente fecha
+
+    # ====================================================
+    # GRAFICACIÓN DE DATOS 
+    # ====================================================
+    entry_time = trade_result['entry_trade_time']
+    entry_price = trade_result['entry_trade_price']
+    exit_time = trade_result['exit_trade_time']
+    exit_price = trade_result['exit_trade_price']
+    outcome = trade_result['outcome']
+    profit= trade_result['profit']
+
+    formated_titulo = START_DATE.strftime('%Y-%m-%d')
+    titulo = f"SP500 Fecha entrada_{formated_titulo}_RESULTADO_{outcome}_{profit}_PUNTOS_Plotted on_{now_str}"
+
+    chart.graficar_precio(
+        df_subset,
+        titulo,
+        START_TIME,
+        END_TIME,
+        y0_value,
+        y1_value,
+        patito_negro_time,
+        patito_negro,
+        first_breakout_pauta_plana_time,
+        first_breakout_pauta_plana_price,
+        entry_price,
+        entry_time,
+        exit_time,
+        exit_price,
+        fractal_bottoms_df
+    )
+
+
+
 
     # Save into a CSV and ceate the output DataFrame to be stored
     output_df = pd.DataFrame([trade_result])

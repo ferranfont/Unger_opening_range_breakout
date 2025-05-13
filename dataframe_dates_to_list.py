@@ -1,3 +1,4 @@
+# Este código extrae un vector de fechas (unique) del fichero de datos.
 import pandas as pd
 import os
 

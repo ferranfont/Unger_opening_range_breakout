@@ -21,9 +21,9 @@ def order_management_with_iterrows(
     first_breakout_pauta_plana_price,
     first_breakout_pauta_plana_time,
     too_late_patito_negro,
-    too_late_brake_fractal_pauta_plana
-):
+    too_late_brake_fractal_pauta_plana,
 
+):
     result = {
         "entry_trade_time": first_breakout_pauta_plana_time,
         "exit_trade_time": None,
@@ -34,32 +34,37 @@ def order_management_with_iterrows(
         "outcome": None, # Label: target, stop...
     }
 
+    # No se entra porque no hay rotura del cuadradito
     if not first_breakout_bool or not patito_negro_bool:
         print("☢️  No valid entry conditions met — exiting without entry.")
         return result
-
+    # No se entra porque no hay rotura de la pauta plana o la rotura es demasiado tarde en el tiempo
     if first_breakout_pauta_plana_price is None or first_breakout_pauta_plana_time is None:
         print("☢️  Missing breakout pauta plana price or time — skipping entry.")
         result['outcome'] = 'no_entry_conditions_met'
         return result
     
-    # no operamos si el fractal o patito negro es realizado muy tarde
+    # Filtro asegurarse de que hay un fractal/rotura del cuadradito antes de buscar una entrada
     if patito_negro_time > too_late_patito_negro:
         print("☢️  Patito Negro breakout time is too late — skipping entry.")
         result['outcome'] = 'no_entry'
         return result
     
-    # no operamos si la entrada es muy tarde
+    # No se entra si la rotura del fractal/patito negro se produce muy tarde
     if first_breakout_pauta_plana_time is None or first_breakout_pauta_plana_time > too_late_brake_fractal_pauta_plana:
         print("☢️  Fractal Break Out too late - skipping entry")
         result['outcome'] = 'no_entry_due_to_late_time'
         return result
+    
+
 
 
     multiplier = 1
-    stop_tolerance = 2
-    stop_lost = y0_value - stop_tolerance
+    stop_tolerance = 4
+    mediana = opening_range/2
+    stop_lost = y1_value - stop_tolerance
     target_profit = first_breakout_pauta_plana_price + opening_range * multiplier
+    target_profit = first_breakout_pauta_plana_price + 10
 
     print("\n===== 🚀 TRADE INITIATED =====")
     print(f"Entry Time: {first_breakout_pauta_plana_time}")

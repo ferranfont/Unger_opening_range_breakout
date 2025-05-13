@@ -21,6 +21,6 @@ def find_first_strong_top(df, y0_value, y1_value, shifts=[1, 2], min_diff=0):
 
     # Return the first matching row (or empty DataFrame)
     if not matching_rows.empty:
-        return matching_rows.iloc[[0]]  # as DataFrame
+        return matching_rows.iloc[[0]] # as DataFrame
     else:
         return pd.DataFrame(columns=df.columns)
